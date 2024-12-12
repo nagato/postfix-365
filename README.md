@@ -1,6 +1,8 @@
 # postfix-oauth2 for Microsoft 365 
 Another Postfix relay docker container with OAUTH2, but working with Microsoft 365
 
+### USE IT AT YOUR OWN RISK
+
 Adapted from https://github.com/takeyamajp/docker-postfix
 
 ## Usage (work in progres) <br />
