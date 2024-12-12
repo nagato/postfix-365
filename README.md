@@ -4,7 +4,7 @@ Another Postfix relay docker container with OAUTH2, but working with Microsoft 3
 Adapted from https://github.com/takeyamajp/docker-postfix
 
 ## Usage (work in progres) <br />
-- pull the project (git pull https://github.com/mauroreggio/postfix-oauth2.git) <br />
+- clone the project (git clone https://github.com/mauroreggio/postfix-365.git) <br />
 - edit docker-compose.yml with right parameters <br />
 - run "docker-compose up" for interactive log on console or <br />
 - run "docker-compose up -d" for run like a daemon in background (docker ps -a for check the status) <br />
