@@ -19,8 +19,8 @@ Based on Alma Linux 9.5, the active docker do:
 docker exec -it postfix bash <br />
 
 ### within the running container
-/usr/sbin/postfix -c /etc/postfix start
-/usr/sbin/postfix -c /etc/postfix stop
+/usr/sbin/postfix -c /etc/postfix start <br />
+/usr/sbin/postfix -c /etc/postfix stop <br />
 
 ## Modify and create a new docker image <br />
 "docker build -t postfix:tag ." <br />
