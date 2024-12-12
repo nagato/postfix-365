@@ -1,0 +1,29 @@
+services:
+  postfix:
+    image: ghcr.io/mauroreggio/postfix-365:1.0.0
+#    network_mode: "host"
+    ports:
+      - "25:25"
+#      - "587:587"
+#      - "465:465"
+    volumes:
+      - ./certs:/ssl_certs
+      - ./keys:/dkim_keys
+      - ./tokens:/etc/tokens
+    environment:
+      TIMEZONE: "Europe/Rome"
+      HOSTNAME: "smtp.example.com"
+      DOMAIN_NAME: "example.com"
+      MY_NETWORK: "192.168.0.0/24"
+      MESSAGE_SIZE_LIMIT: "10240000"
+      AUTH_USER: "example@example.com"
+      DISABLE_SMTP_AUTH_ON_PORT_25: "false"
+      RELAY_HOST: "smtp.office365.com"
+      RELAY_HOST_PORT: "587"
+      ENABLE_DKIM: "true"
+      DKIM_KEY_LENGTH: "1024"
+      DKIM_SELECTOR: "default"
+      CLIENT_ID: "your client id (id of the application created on Azure Entra ID)"
+      CLIENT_SECRET: "value (value) of the secure certs created for the application on Azure Entra ID"
+      TENANT_ID: "your tenant id"
+    container_name: postfix
