@@ -49,7 +49,8 @@ docker exec -it postfix bash
 ## Modify and create a new docker image <br />
 ```
 "docker build -t localhost/postfix-365:tag ."
-(or if you want build without any docker cache: "docker build --no-cache -t localhost/postfix-365:1.0.0 .")
+(or if you want build without any docker cache):
+"docker build --no-cache -t localhost/postfix-365:1.0.0 ."
 ```
 <br />
 <br />
