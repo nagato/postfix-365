@@ -23,7 +23,14 @@ This step consist in: <br />
 - bash into the running container
 - run the script that assist you
 - this create an example@example.com file in /etc/tokens folder of the container, mapped on the ./tokens local folder. <br />
-NOT TESTED: the "sasl-xoauth2-tool" is a perl script. If you desire you can install and run out of the container and create the example@example.com file in the ./tokens local folder. Don't forget to assign postfix:postfix own group:user to the file from the container bash (only first time you run, is persistent) <br />
+NOT TESTED: the "sasl-xoauth2-tool" is a perl script. If you desire you can install and run out of the container and create the example@example.com file in the ./tokens local folder. Don't forget to assign postfix:postfix own group:user to the file from the container bash (only first time, is persistent) <br />
+
+My "sasl-xoauth2-tool" example is:
+
+sasl-xoauth2-tool get-token outlook \
+    /etc/tokens/example@example.com \
+    --tenant= your tenant id \
+    --client-id= your client id (id of the application created on Azure Entra ID)
 
 ## Debug <br />
 ### bash into running container
