@@ -27,23 +27,30 @@ NOT TESTED: the "sasl-xoauth2-tool" is a perl script. If you desire you can inst
 
 My "sasl-xoauth2-tool" example is:
 
+```
 sasl-xoauth2-tool get-token outlook \
     /etc/tokens/example@example.com \
     --tenant= your tenant id \
     --client-id= your client id (id of the application created on Azure Entra ID)
+```
 
 ## Debug <br />
 ### bash into running container
+```
 docker exec -it postfix bash <br />
+```
 
 ### within the running container
+```
 /usr/sbin/postfix -c /etc/postfix start <br />
 /usr/sbin/postfix -c /etc/postfix stop <br />
+```
 
 ## Modify and create a new docker image <br />
+```
 "docker build -t localhost/postfix-365:tag ." <br />
 (or if you want build without any docker cache: "docker build --no-cache -t localhost/postfix-365:1.0.0 .") <br />
-
+```
 <br />
 <br />
 
