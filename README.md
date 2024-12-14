@@ -37,19 +37,19 @@ sasl-xoauth2-tool get-token outlook \
 ## Debug <br />
 ### bash into running container
 ```
-docker exec -it postfix bash <br />
+docker exec -it postfix bash
 ```
 
 ### within the running container
 ```
-/usr/sbin/postfix -c /etc/postfix start <br />
-/usr/sbin/postfix -c /etc/postfix stop <br />
+/usr/sbin/postfix -c /etc/postfix start
+/usr/sbin/postfix -c /etc/postfix stop
 ```
 
 ## Modify and create a new docker image <br />
 ```
-"docker build -t localhost/postfix-365:tag ." <br />
-(or if you want build without any docker cache: "docker build --no-cache -t localhost/postfix-365:1.0.0 .") <br />
+"docker build -t localhost/postfix-365:tag ."
+(or if you want build without any docker cache: "docker build --no-cache -t localhost/postfix-365:1.0.0 .")
 ```
 <br />
 <br />
