@@ -33,7 +33,10 @@ sasl-xoauth2-tool get-token outlook \
     --tenant=your tenant id (no space after =) \
     --client-id=your client id (no space after =) (id of the application created on Azure Entra ID)
 ```
-If msal not found into the container, install it:
+PAY ATTENTION TO AUTHENTICATE FROM THE WEB WITH THE RIGHT USER <br />
+(In my example authenticate with example@example.com not with tenant global admin) <br />
+<br />
+If msal not found into the container, install it: <br />
 (bash into the container) 
 
 ```
