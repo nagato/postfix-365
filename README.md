@@ -40,6 +40,20 @@ If msal not found into the container, install it:
 yum install pip -y
 pip install azure-cli
 ```
+Special instruction for Azure App creation:
+
+
+    Use any name you like (it doesn't have to be "sasl-xoauth2").
+    Add "Web Application" with this redirected URI: https://login.microsoftonline.com/common/oauth2/nativeclient
+    You must toggle "Allow public client flows" to "yes".
+    Be sure to select the appropriate type of account (consumer Outlook vs. "organizational directory") -- see #89 for why.
+
+Then, add API permissions for SMTP.Send:
+
+    From the app registration "API permissions" page, click "add a permission".
+    Click "Microsoft Graph".
+    Enter "SMTP.Send" in the search box.
+    Expand the SMTP permission, then check the SMTP.Send checkbox.
 
 ## Debug <br />
 ### bash into running container
