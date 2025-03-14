@@ -33,6 +33,13 @@ sasl-xoauth2-tool get-token outlook \
     --tenant= your tenant id \
     --client-id= your client id (id of the application created on Azure Entra ID)
 ```
+If msal not found into the container, install it:
+(bash into the container) 
+
+```
+yum install pip -y
+pip install azure-cli
+```
 
 ## Debug <br />
 ### bash into running container
