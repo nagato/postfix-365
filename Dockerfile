@@ -1,5 +1,5 @@
 FROM almalinux:9.5
-MAINTAINER "mauroreggio"
+MAINTAINER "nagato"
 
 # utility
 RUN dnf -y install nmap net-tools; \

@@ -1,0 +1,8 @@
+# local test stuff
+docker-compose.override.yml
+logs/
+tokens/
+certs/
+keys/
+*.log
+*.tmp

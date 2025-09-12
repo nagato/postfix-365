@@ -1,7 +1,9 @@
 #!/bin/bash -eu
 set -e
 
-sed -i 's/enforcing/disabled/g' /etc/selinux/config
+if [ -f /etc/selinux/config ]; then
+  sed -i 's/enforcing/disabled/g' /etc/selinux/config
+fi
 
 # docker exec -it postfix bash
 
