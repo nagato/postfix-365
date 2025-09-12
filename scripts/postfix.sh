@@ -9,12 +9,6 @@ fi
 
 echo "# BEGIN SMTP SETTINGS" > /etc/postfix/main.cf
 
-if [ ${DISABLE_SMTP_AUTH_ON_PORT_25,,} = "true" ]; then
-  echo "smtpd_sasl_auth_enable = no" >> /etc/postfix/main.cf
-else
-  echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf
-fi
-
 {
 echo ""
 echo "myhostname = ${HOSTNAME}"
@@ -47,6 +41,26 @@ echo ""
 echo "# END SMTP SETTINGS"
 } >> /etc/postfix/main.cf
 
+# --- SMTPD options
+echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf
+echo "smtpd_sasl_type = cyrus" >> /etc/postfix/main.cf
+echo "smtpd_sasl_security_options = noanonymous" >> /etc/postfix/main.cf
+echo "smtpd_tls_auth_only = yes" >> /etc/postfix/main.cf   # require TLS for AUTH
+
+# --- inbound SMTP TLS (server side) ---
+echo "smtpd_tls_security_level = may"            >> /etc/postfix/main.cf   # allow STARTTLS
+echo "smtpd_tls_auth_only = yes"                 >> /etc/postfix/main.cf   # require TLS for AUTH
+echo "smtpd_tls_cert_file = /ssl_certs/cert.pem" >> /etc/postfix/main.cf
+echo "smtpd_tls_key_file  = /ssl_certs/key.pem"  >> /etc/postfix/main.cf
+# harden a bit (optional):
+echo "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1" >> /etc/postfix/main.cf
+echo "smtpd_tls_loglevel = 1"                                 >> /etc/postfix/main.cf
+# --- end inbound TLS ---
+# force realm for clients that don't send one (matches what build_sasldb writes)
+DEFAULT_REALM="${DEFAULT_SASL_REALM:-${DOMAIN_NAME:-${HOSTNAME}}}"
+echo "smtpd_sasl_local_domain = ${DEFAULT_REALM}" >> /etc/postfix/main.cf
+echo "broken_sasl_auth_clients = yes"              >> /etc/postfix/main.cf
+
 # --- fixed logfile location under /var/log (persistent-friendly) ---
 LOG_BASE="/var/log/postfix"
 LOG_FILE="${LOG_BASE}/maillog"
@@ -62,6 +76,17 @@ echo "maillog_file = ${LOG_FILE}" >> /etc/postfix/main.cf
 ln -sf "${LOG_FILE}" /var/log/maillog
 ln -sf "${LOG_FILE}" /var/log/mail.log
 # --- end logfile setup ---
+
+# Cyrus SASL (server) config for Postfix smtpd
+mkdir -p /etc/sasl2
+cat > /etc/sasl2/smtpd.conf <<'EOF'
+pwcheck_method: auxprop
+auxprop_plugin: sasldb
+mech_list: PLAIN LOGIN
+sasldb_path: /etc/sasl2/sasldb2
+log_level: 7
+EOF
+chmod 644 /etc/sasl2/smtpd.conf
 
 cd /etc
 newaliases
