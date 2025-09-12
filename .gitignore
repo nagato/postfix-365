@@ -6,3 +6,4 @@ certs/
 keys/
 *.log
 *.tmp
+sasl_users
