@@ -1,7 +1,10 @@
 services:
-  postfix:
-    image: ghcr.io/mauroreggio/postfix-365:1.0.0
-#    network_mode: "host"
+  postfix-mailrelay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: postfix-mailrelay:local
+    pull_policy: never
     ports:
       - "25:25"
 #      - "587:587"
@@ -10,8 +13,9 @@ services:
       - ./certs:/ssl_certs
       - ./keys:/dkim_keys
       - ./tokens:/etc/tokens
+      - ./logs:/var/log/postfix
     environment:
-      TIMEZONE: "Europe/Rome"
+      TIMEZONE: "Chicago/America"
       HOSTNAME: "smtp.example.com"
       DOMAIN_NAME: "example.com"
       MY_NETWORK: "192.168.0.0/24"
@@ -23,4 +27,4 @@ services:
       CLIENT_ID: "your client id (id of the application created on Azure Entra ID)"
       CLIENT_SECRET: "value (value) of the secure certs created for the application on Azure Entra ID"
       TENANT_ID: "your tenant id"
-    container_name: postfix
+    container_name: postfix-mailrelay
