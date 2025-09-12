@@ -13,6 +13,7 @@ services:
       - ./certs:/ssl_certs
       - ./keys:/dkim_keys
       - ./tokens:/etc/tokens
+      - ./sasl_users:/etc/postfix/sasl_users
       - ./logs:/var/log/postfix
     environment:
       TIMEZONE: "Chicago/America"

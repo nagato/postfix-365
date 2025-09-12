@@ -58,7 +58,7 @@ RUN dnf -y install supervisor; \
     dnf clean all;
 
 # Copy Scripts
-COPY       /scripts/*                    /scripts/
+COPY       scripts/                    /scripts/
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]

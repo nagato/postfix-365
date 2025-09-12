@@ -19,5 +19,6 @@ chmod +x /scripts/*.sh
 . /scripts/postfix.sh
 . /scripts/sasl_passwd.sh
 . /scripts/sasl-xoauth2.conf.sh
+/scripts/build_sasldb.sh
 
 exec "$@"
