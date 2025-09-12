@@ -47,6 +47,22 @@ echo ""
 echo "# END SMTP SETTINGS"
 } >> /etc/postfix/main.cf
 
+# --- fixed logfile location under /var/log (persistent-friendly) ---
+LOG_BASE="/var/log/postfix"
+LOG_FILE="${LOG_BASE}/maillog"
+
+mkdir -p "$LOG_BASE"
+touch "$LOG_FILE"
+chown -R postfix:postfix "$LOG_BASE"
+
+# Tell Postfix to write here (under default-allowed prefix /var/log)
+echo "maillog_file = ${LOG_FILE}" >> /etc/postfix/main.cf
+
+# Optional: keep classic paths working for tools that expect them
+ln -sf "${LOG_FILE}" /var/log/maillog
+ln -sf "${LOG_FILE}" /var/log/mail.log
+# --- end logfile setup ---
+
 cd /etc
 newaliases
 
