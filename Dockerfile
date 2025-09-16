@@ -24,6 +24,9 @@ RUN dnf -y install epel-release; \
 RUN dnf -y install sasl-xoauth2; \
     dnf clean all;
 
+# logrotate + cron
+RUN dnf -y install logrotate cronie && dnf clean all
+
 # rsyslog
 RUN dnf -y install rsyslog; \
     sed -i 's/\(SysSock\.Use\)="off"/\1="on"/' /etc/rsyslog.conf; \
@@ -48,6 +51,11 @@ RUN dnf -y install supervisor; \
     echo 'command=/usr/sbin/rsyslogd -n'; \
     echo 'priority=2'; \
     } > /etc/supervisord.d/rsyslog.ini; \
+    { \
+    echo '[program:crond]'; \
+    echo 'command=/usr/sbin/crond -n'; \
+    echo 'priority=1'; \
+    } > /etc/supervisord.d/crond.ini; \
     { \
     echo '[program:tail]'; \
     echo 'command=/usr/bin/tail -F /var/log/maillog'; \

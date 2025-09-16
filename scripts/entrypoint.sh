@@ -14,5 +14,6 @@ chmod +x /scripts/*.sh
 . /scripts/sasl_passwd.sh
 . /scripts/sasl-xoauth2.conf.sh
 /scripts/build_sasldb.sh
+/scripts/logrotate.sh
 
 exec "$@"
