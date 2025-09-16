@@ -1,83 +1,75 @@
-#!/bin/bash -eu
-set -e
+#!/bin/bash
+set -euo pipefail
 
-chown postfix:postfix /etc/tokens -R
+# --- prep ---
+chown postfix:postfix /etc/tokens -R 2>/dev/null || true
 
-if [ -e /etc/postfix/main.cf ]; then
- rm -f /etc/postfix/main.cf
-fi
-
-echo "# BEGIN SMTP SETTINGS" > /etc/postfix/main.cf
-
-{
-echo ""
-echo "myhostname = ${HOSTNAME}"
-echo "mydomain = ${DOMAIN_NAME}"
-echo "inet_interfaces = all"
-echo "inet_protocols = ipv4"
-echo 'myorigin = $mydomain'
-echo 'mydestination = $myhostname'
-echo "mynetworks = 127.0.0.0/8, ${MY_NETWORK}"
-echo "home_mailbox = Maildir/"
-echo "disable_vrfy_command = yes"
-echo "smtpd_helo_required = yes"
-echo "alias_database = hash:/etc/aliases"
-echo "alias_maps = hash:/etc/aliases"
-echo "smtpd_banner = \$myhostname ESMTP"
-echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"
-echo ""
-echo "smtp_sasl_auth_enable = yes"
-echo "smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd"
-echo "smtp_sasl_security_options ="
-echo "smtp_sasl_mechanism_filter = xoauth2"
-echo ""
-echo "smtp_tls_security_level = encrypt"
-echo "smtp_tls_CAfile = /etc/ssl/certs/ca-bundle.trust.crt"
-echo 'smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache'
-echo ""
-echo "relayhost = [${RELAY_HOST}]:${RELAY_HOST_PORT}"
-echo "smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination"
-echo ""
-echo "# END SMTP SETTINGS"
-} >> /etc/postfix/main.cf
-
-# --- SMTPD options
-echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf
-echo "smtpd_sasl_type = cyrus" >> /etc/postfix/main.cf
-echo "smtpd_sasl_security_options = noanonymous" >> /etc/postfix/main.cf
-echo "smtpd_tls_auth_only = yes" >> /etc/postfix/main.cf   # require TLS for AUTH
-
-# --- inbound SMTP TLS (server side) ---
-echo "smtpd_tls_security_level = may"            >> /etc/postfix/main.cf   # allow STARTTLS
-echo "smtpd_tls_auth_only = yes"                 >> /etc/postfix/main.cf   # require TLS for AUTH
-echo "smtpd_tls_cert_file = /ssl_certs/cert.pem" >> /etc/postfix/main.cf
-echo "smtpd_tls_key_file  = /ssl_certs/key.pem"  >> /etc/postfix/main.cf
-# harden a bit (optional):
-echo "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1" >> /etc/postfix/main.cf
-echo "smtpd_tls_loglevel = 1"                                 >> /etc/postfix/main.cf
-# --- end inbound TLS ---
-# force realm for clients that don't send one (matches what build_sasldb writes)
-DEFAULT_REALM="${DEFAULT_SASL_REALM:-${DOMAIN_NAME:-${HOSTNAME}}}"
-echo "smtpd_sasl_local_domain = ${DEFAULT_REALM}" >> /etc/postfix/main.cf
-echo "broken_sasl_auth_clients = yes"              >> /etc/postfix/main.cf
-
-# --- fixed logfile location under /var/log (persistent-friendly) ---
 LOG_BASE="/var/log/postfix"
 LOG_FILE="${LOG_BASE}/maillog"
-
 mkdir -p "$LOG_BASE"
-touch "$LOG_FILE"
+: > "$LOG_FILE"
 chown -R postfix:postfix "$LOG_BASE"
 
-# Tell Postfix to write here (under default-allowed prefix /var/log)
-echo "maillog_file = ${LOG_FILE}" >> /etc/postfix/main.cf
+# Realm for clients that omit one (aligns with build_sasldb.sh)
+DEFAULT_REALM="${DEFAULT_SASL_REALM:-${DOMAIN_NAME:-${HOSTNAME}}}"
 
-# Optional: keep classic paths working for tools that expect them
+# --- main.cf (single pass, no trailing comments on value lines) ---
+cat > /etc/postfix/main.cf <<EOF
+############################################
+# Postfix main.cf (generated at container start)
+############################################
+
+# ---------- [base] ----------
+myhostname = ${HOSTNAME}
+mydomain = ${DOMAIN_NAME}
+inet_interfaces = all
+inet_protocols = ipv4
+myorigin = \$mydomain
+mydestination = \$myhostname
+mynetworks = 127.0.0.0/8, ${MY_NETWORK}
+home_mailbox = Maildir/
+disable_vrfy_command = yes
+smtpd_helo_required = yes
+alias_database = hash:/etc/aliases
+alias_maps = hash:/etc/aliases
+smtpd_banner = \$myhostname ESMTP
+message_size_limit = ${MESSAGE_SIZE_LIMIT}
+
+# ---------- [smtp] (outbound relay to 365) ----------
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options =
+smtp_sasl_mechanism_filter = xoauth2
+smtp_tls_security_level = encrypt
+smtp_tls_CAfile = /etc/ssl/certs/ca-bundle.trust.crt
+smtp_tls_session_cache_database = btree:\${data_directory}/smtp_scache
+relayhost = [${RELAY_HOST}]:${RELAY_HOST_PORT}
+
+# ---------- [smtpd] (inbound) ----------
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = cyrus
+smtpd_sasl_security_options = noanonymous
+smtpd_sasl_local_domain = ${DEFAULT_REALM}
+broken_sasl_auth_clients = yes
+
+# ---------- [smtpd/tls] ----------
+smtpd_tls_security_level = may
+smtpd_tls_auth_only = yes
+smtpd_tls_cert_file = /ssl_certs/cert.pem
+smtpd_tls_key_file  = /ssl_certs/key.pem
+smtpd_tls_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+smtpd_tls_loglevel = 1
+
+# ---------- [logging] ----------
+maillog_file = ${LOG_FILE}
+EOF
+
+# Symlinks for tools that expect classic paths
 ln -sf "${LOG_FILE}" /var/log/maillog
 ln -sf "${LOG_FILE}" /var/log/mail.log
-# --- end logfile setup ---
 
-# Cyrus SASL (server) config for Postfix smtpd
+# --- Cyrus SASL server config for smtpd ---
 mkdir -p /etc/sasl2
 cat > /etc/sasl2/smtpd.conf <<'EOF'
 pwcheck_method: auxprop
@@ -88,6 +80,5 @@ log_level: 7
 EOF
 chmod 644 /etc/sasl2/smtpd.conf
 
-cd /etc
+# Build aliases db
 newaliases
-
