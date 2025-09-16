@@ -7,7 +7,6 @@ chown postfix:postfix /etc/tokens -R 2>/dev/null || true
 LOG_BASE="/var/log/postfix"
 LOG_FILE="${LOG_BASE}/maillog"
 mkdir -p "$LOG_BASE"
-: > "$LOG_FILE"
 chown -R postfix:postfix "$LOG_BASE"
 
 # Realm for clients that omit one (aligns with build_sasldb.sh)
