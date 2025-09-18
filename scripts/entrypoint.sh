@@ -1,18 +1,36 @@
-#!/bin/bash -eu
+#!/bin/bash
+set -euo pipefail
 
-ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
-
-if [ ! -e /ssl_certs/cert.pem ] || [ ! -e /ssl_certs/key.pem ]; then
-  openssl genrsa -out "/ssl_certs/key.pem" 2048 &>/dev/null
-  openssl req -new -key "/ssl_certs/key.pem" -subj "/CN=${HOSTNAME}" -out "/ssl_certs/csr.pem"
-  openssl x509 -req -days 36500 -in "/ssl_certs/csr.pem" -signkey "/ssl_certs/key.pem" -out "/ssl_certs/cert.pem" &>/dev/null
+# Timezone (fallback to UTC if invalid/missing)
+TZFILE="/usr/share/zoneinfo/${TIMEZONE:-UTC}"
+if [ -f "$TZFILE" ]; then
+  ln -fs "$TZFILE" /etc/localtime
+else
+  ln -fs /usr/share/zoneinfo/UTC /etc/localtime
 fi
 
-chmod +x /scripts/*.sh
-. /scripts/postfix.sh
-. /scripts/sasl_passwd.sh
-. /scripts/sasl-xoauth2.conf.sh
+# Ensure script perms (or move this to Dockerfile)
+find /scripts -maxdepth 1 -type f -name '*.sh' -exec chmod +x {} +
+
+# Self-signed certs if none provided
+mkdir -p /ssl_certs
+umask 077
+if [ ! -e /ssl_certs/cert.pem ] || [ ! -e /ssl_certs/key.pem ]; then
+  # one-liner: key + long-lived self-signed cert
+  openssl req -x509 -newkey rsa:2048 -nodes \
+    -keyout /ssl_certs/key.pem -out /ssl_certs/cert.pem \
+    -days 36500 -subj "/CN=${HOSTNAME}"
+fi
+chown root:root /ssl_certs/key.pem /ssl_certs/cert.pem
+chmod 600 /ssl_certs/key.pem
+chmod 644 /ssl_certs/cert.pem
+
+# Configure services
+/scripts/postfix.sh
+/scripts/sasl_passwd.sh
+/scripts/sasl-xoauth2.conf.sh
 /scripts/build_sasldb.sh
 /scripts/logrotate.sh
 
+# Hand over to supervisord (or your CMD)
 exec "$@"
