@@ -9,7 +9,6 @@ if [ ! -e /ssl_certs/cert.pem ] || [ ! -e /ssl_certs/key.pem ]; then
 fi
 
 chmod +x /scripts/*.sh
-. /scripts/selinux.sh
 . /scripts/postfix.sh
 . /scripts/sasl_passwd.sh
 . /scripts/sasl-xoauth2.conf.sh
